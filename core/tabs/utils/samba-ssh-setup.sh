@@ -2,6 +2,7 @@
 
 # Load common script functions
 . ../common-script.sh  
+. ../common-service-script.sh  
 
 # Function to install packages based on the package manager
 install_package() {
@@ -75,6 +76,9 @@ setup_samba() {
         read -r MODIFY_SAMBA
         if [ "$MODIFY_SAMBA" = "Y" ] || [ "$MODIFY_SAMBA" = "y" ]; then
             "$ESCALATION_TOOL" "$EDITOR" "$SAMBA_CONFIG"
+        else
+            printf "%b\n" "${GREEN}Skipping modification of Samba configuration.${RC}"
+            return
         fi
     else
         printf "%b\n" "${YELLOW}No existing Samba configuration found. Setting up a new one...${RC}"
@@ -133,11 +137,11 @@ setup_samba() {
 EOL
     fi
 
-    for service in smb nmb; do
+    for service in smbd nmbd; do
         startAndEnableService "$service"
     done
 
-    if isServiceActive smb && isServiceActive nmb; then
+    if isServiceActive smbd && isServiceActive nmbd; then
         printf "%b\n" "${GREEN}Samba is up and running.${RC}"
         printf "%b\n" "${YELLOW}Samba share available at: $SHARED_DIR${RC}"
     else
