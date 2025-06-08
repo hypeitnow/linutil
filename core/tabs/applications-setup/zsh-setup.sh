@@ -46,9 +46,13 @@ PROMPT='%F{32}%n%f%F{166}@%f%F{64}%m:%F{166}%~%f%F{15}$%f '
 RPROMPT='%F{15}(%F{166}%D{%H:%M}%F{15})%f'
 EOL
 
-  # Ensure /etc/zsh/zshenv sets ZDOTDIR to the user's config directory
+  # Ensure /etc/zsh/zshenv sets ZDOTDIR to the user's config directory but accept if the user wants to have the scripts .zshrc as fallback or did not have their own .zshrc
   [ ! -f /etc/zsh/zshenv ] && "$ESCALATION_TOOL" mkdir -p /etc/zsh && "$ESCALATION_TOOL" touch /etc/zsh/zshenv
-  echo "export ZDOTDIR=\"$HOME/.config/zsh\"" | "$ESCALATION_TOOL" tee -a /etc/zsh/zshenv
+  if [ -f $HOME/.zshenv ] ; then 
+    grep -qxF 'export ZDOTDIR="$HOME/.config/zsh"' /etc/zsh/zshenv || (echo "export ZDOTDIR=\"$HOME/.config/zsh\"" | "$ESCALATION_TOOL" tee -a /etc/zsh/zshenv)
+    echo "export ZDOTDIR=\"$HOME\"" | "$ESCALATION_TOOL" tee -a /etc/zsh/zprofile
+  else
+    grep -qxF 'export ZDOTDIR="$HOME/.config/zsh"' /etc/zsh/zshenv || (echo "export ZDOTDIR=\"$HOME/.config/zsh\"" | "$ESCALATION_TOOL" tee -a /etc/zsh/zshenv)
 }
 
 checkEnv
